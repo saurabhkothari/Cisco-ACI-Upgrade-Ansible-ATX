@@ -1,0 +1,54 @@
+#APIC INFO
+apic_ip: 
+apic_url: 
+apic_username: saukotha
+apic_password: 
+
+#Precheck APIs
+apic_config_backup: "ATX_PreUpgradeBackUp"
+phys_node_api_path: "/api/node/class/fabricNode.json"
+apic_health_api_path: "/api/class/infraWiNode.json"
+nodes_health_api_path: '/api/node/class/topSystem.json?query-target-filter=not(wcard(topSystem.dn,"__ui_"))&rsp-subtree-include=health,required'
+avg_health_api_path: "/api/node/mo/topology/HDfabricOverallHealth5min-0.json"
+aes_api_path: '/api/mo/uni/exportcryptkey.json'
+ctrl_api_path:
+       - /api/node/class/topology/pod-1/node-1/eqptStorage.json
+         #- /api/node/class/topology/pod-1/node-2/eqptStorage.json
+         #- /api/node/class/topology/pod-1/node-3/eqptStorage.json
+fabric_fault_api_path: "api/class/faultInfo.json"
+
+#Firmware Source API
+firmware_images:
+        - aci-apic-dk9.5.1.4c.iso
+        - aci-n9000-dk9.15.1.4c.bin
+apic_firmware_image: aci-apic-dk9.5.1.3e.iso
+switch_firmware_image: aci-n9000-dk9.15.1.3e.bin
+firmware_source: 10.76.101.138
+
+#Firmware Upgrade APIs
+apic_fw_policy_api_path: "/api/node/mo/uni/controller.xml"
+apic_fw_payload_api_path: <firmwareCtrlrFwP version="apic-5.1(4c)" ignoreCompat="true"></firmwareCtrlrFwP>
+apic_fw_trigger_api_path: "/api/node/mo/uni/controller.xml"
+apic_trigger_payload_api_path: <maintCtrlrMaintP adminState="up" adminSt="triggered"></maintCtrlrMaintP>
+
+spine_odd_fw_payload_api_path: <fabricInst><maintMaintP version="n9000-15.1(4c)" name="spine-odd" runMode="pauseOnlyOnFailures" ignoreCompat="true"></maintMaintP><maintMaintGrp name='spine-odd'><fabricNodeBlk name='spine-1' from_='1001' to_='1001'></fabricNodeBlk><maintRsMgrpp tnMaintMaintPName='spine-odd'></maintRsMgrpp></maintMaintGrp></fabricInst>
+spine_odd_trigger_payload_api_path: <maintMaintP name="spine-odd" adminSt="triggered"></maintMaintP>
+
+leaf_odd_fw_payload_api_path: <fabricInst><maintMaintP version="n9000-15.1(4c)" name="leaf-odd" runMode="pauseOnlyOnFailures" ignoreCompat="true"></maintMaintP><maintMaintGrp name="leaf-odd"><fabricNodeBlk name="leaf-1" from_="101" to_="101"></fabricNodeBlk><fabricNodeBlk name="leaf-3" from_="103" to_="103"></fabricNodeBlk><maintRsMgrpp tnMaintMaintPName="leaf-odd" ></maintRsMgrpp></maintMaintGrp></fabricInst>
+leaf_odd_trigger_payload_api_path: <maintMaintP name="leaf-odd" adminSt="triggered"></maintMaintP>
+
+leaf_even_fw_payload_api_path: <fabricInst><maintMaintP version="n9000-15.1(4c)" name="leaf-even" runMode="pauseOnlyOnFailures" ignoreCompat="true"></maintMaintP><maintMaintGrp name="leaf-even"><fabricNodeBlk name="leaf-2" from_="102" to_="102"></fabricNodeBlk><fabricNodeBlk name="leaf-4" from_="104" to_="104"></fabricNodeBlk><maintRsMgrpp tnMaintMaintPName="leaf-even" ></maintRsMgrpp></maintMaintGrp></fabricInst>
+leaf_even_trigger_payload_api_path: <maintMaintP name="leaf-even" adminSt="triggered"></maintMaintP>
+
+#Backup
+backup_remote_server_api_path: "/api/node/mo/uni/fabric.json"
+
+#VLAN Info
+vlan_overlap_api_path: "/api/node/mo/uni/infra/settings.json"
+vlan_overlap_api_content: '{"infraSetPol":{"attributes":{"dn":"uni/infra/settings","validateOverlappingVlans":"true"},"children":[]}}'
+
+#Techsupport
+tech_support_policy_api_path: "/api/node/mo/uni/fabric.json"
+tech_support_bundle_dn: "uni/fabric/tsod-ATX_PreUpgradeTechSupport"
+tech_support_bundle_name: "ATX_PreUpgradeTechSupport"
+tech_support_bundle_rn: "tsod-ATX_PreUpgradeTechSupport"
