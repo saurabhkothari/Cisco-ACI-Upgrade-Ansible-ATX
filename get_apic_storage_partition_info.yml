@@ -1,0 +1,28 @@
+- name: Verify utlization of the firmware parition
+  hosts: apic
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks: 
+  - name: Query Controller
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: get
+     path: "{{ item }}"
+    delegate_to: localhost
+   
+    loop: "{{ ctrl_api_path }}" 
+    register: node_result
+    
+  - name: Filter Query
+    set_fact:
+            test: "{{ node_result | json_query(\"results[*].imdata[*].eqptStorage.attributes\") }}"
+        
+            FIRMWARE_STORAGE: "{{ node_result | json_query(\"results[*].imdata[*].eqptStorage.attributes.{name: name, FileSystem: fileSystem, UtlizationPercentage: capUtilized, Node: dn}\") }}"
+            test1: "{{ FIRMWARE_STORAGE | json_query(\"[]|[? name=='/firmware']\") }}"
+  - name: CONTROLLER DISK INFORMATION
+    debug:
+          msg: "{{  FIRMWARE_STORAGE | json_query(\"[]|[? name=='/firmware']\") }}"

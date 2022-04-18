@@ -1,0 +1,30 @@
+- name: Collect PreUpgrade Tech Support Logs
+  hosts: apic
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks: 
+  - name: Create On-demand Tech Support Policy
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: post
+     path: "{{ tech_support_policy_api_path }}"
+     content: '{"fabricInst":{"attributes":{"dn":"uni/fabric","status":"modified"},"children":[{"fabricFuncP":{"attributes":{"dn":"uni/fabric/funcprof","status":"modified"},"children":[{"fabricCtrlrPGrp":{"attributes":{"dn":"uni/fabric/funcprof/ctrlrgrp-default","status":"modified"},"children":[{"fabricRsApplTechSupOnDemand":{"attributes":{"tnDbgexpTechSupOnDName":"{{ tech_support_bundle_name }}"},"children":[]}}]}}]}},{"dbgexpTechSupOnD":{"attributes":{"dn":"{{ tech_support_bundle_dn }}","name":"{{ tech_support_bundle_name }}","upgradeLogs":"true","rn":"{{ tech_support_bundle_rn }}","status":"created"},"children":[{"dbgexpRsTsSrc":{"attributes":{"tDn":"topology/pod-1/node-1001/sys","status":"created"},"children":[]}},{"dbgexpRsTsSrc":{"attributes":{"tDn":"topology/pod-1/node-101/sys","status":"created"},"children":[]}},{"dbgexpRsTsSrc":{"attributes":{"tDn":"topology/pod-1/node-102/sys","status":"created"},"children":[]}},{"dbgexpRsExportDest":{"attributes":{"tDn":"uni/fabric/path-ATX_ScpServer","status":"created"},"children":[]}}]}}]}}'
+    delegate_to: localhost    
+    register: query_result
+
+  - name: Collect Tech Support Bundle
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: post
+     path: "{{ tech_support_policy_api_path }}"
+     content: '{"dbgexpTechSupOnD":{"attributes":{"dn":"{{ tech_support_bundle_dn }}","rn":"{{ tech_support_bundle_rn }}","adminSt":"triggered"},"children":[]}}'
+    delegate_to: localhost
+    register: query_result
+

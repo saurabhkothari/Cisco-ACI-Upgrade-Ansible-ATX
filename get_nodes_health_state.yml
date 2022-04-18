@@ -1,0 +1,53 @@
+- name: Fetch Fabric Nodes Health Info
+  hosts: apic
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks:
+
+  - name: Query APIC
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: get
+     path: "{{ nodes_health_api_path }}"
+    delegate_to: localhost    
+    register: query_result
+
+  - name: Query APIC
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: get
+     path: "{{ avg_health_api_path }}"
+    delegate_to: localhost
+    register: health_score
+
+  - name: Filter Query
+    set_fact:
+        leaf1_h: "{{ query_result | json_query(\"imdata[].topSystem  | [?attributes.dn=='topology/pod-1/node-101/sys'].children[].healthInst.attributes.{rn: rn, score: cur}\") }}"
+        leaf2_h: "{{ query_result | json_query(\"imdata[].topSystem  | [?attributes.dn=='topology/pod-1/node-102/sys'].children[].healthInst.attributes.{rn: rn, score: cur}\") }}"
+        leaf3_h: "{{ query_result | json_query(\"imdata[].topSystem  | [?attributes.dn=='topology/pod-1/node-103/sys'].children[].healthInst.attributes.{rn: rn, score: cur}\") }}"
+        leaf4_h: "{{ query_result | json_query(\"imdata[].topSystem  | [?attributes.dn=='topology/pod-1/node-104/sys'].children[].healthInst.attributes.{rn: rn, score: cur}\") }}"
+        spine_h: "{{ query_result | json_query(\"imdata[].topSystem  | [?attributes.dn=='topology/pod-1/node-1001/sys'].children[].healthInst.attributes.{rn: rn, score: cur}\")  }}"  
+        leaf1_i: "{{ query_result | json_query(\"imdata[].topSystem.attributes  | [?dn=='topology/pod-1/node-101/sys'].{name: name}\") }}"
+        leaf2_i: "{{ query_result | json_query(\"imdata[].topSystem.attributes  | [?dn=='topology/pod-1/node-102/sys'].{name: name}\") }}"
+        leaf3_i: "{{ query_result | json_query(\"imdata[].topSystem.attributes  | [?dn=='topology/pod-1/node-103/sys'].{name: name}\") }}"
+        leaf4_i: "{{ query_result | json_query(\"imdata[].topSystem.attributes  | [?dn=='topology/pod-1/node-104/sys'].{name: name}\") }}"
+        spine_i: "{{ query_result | json_query(\"imdata[].topSystem.attributes  | [?dn=='topology/pod-1/node-1001/sys'].{name: name}\")  }}"
+        avg_score: "{{ health_score | json_query(\"imdata[].fabricOverallHealthHist5min.attributes.{AvgHealthScore: healthAvg}\")  }}"
+    
+  - name: Health Score Details
+    debug:
+     msg: 
+      - "{{ spine_i + spine_h }}" 
+      - "{{ leaf1_i + leaf1_h  }}"
+      - "{{ leaf2_i + leaf2_h  }}"
+      - "{{ leaf3_i + leaf3_h  }}"
+      - "{{ leaf4_i + leaf4_h  }}"
+      - "{{ avg_score }}"
+ 

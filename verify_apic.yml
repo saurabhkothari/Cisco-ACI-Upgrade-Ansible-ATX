@@ -1,0 +1,40 @@
+- hosts: localhost
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks:
+  - name: Wait until APIC is online
+    wait_for: 
+     host: "{{ apic_ip }}"
+     port: 443
+    delegate_to: localhost 
+    register: x
+    #until: x.status == 200
+    #retries: 100
+    #delay: 30
+  
+  - debug: 
+     msg: " APIC IS ONLINE"
+
+  - name: Query APIC
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: get
+     path: "{{ phys_node_api_path }}"
+    delegate_to: localhost
+    register: query_result
+
+  - name: Filter Query
+    set_fact:
+            CONTROLLER_FW: "{{ query_result | json_query(\"imdata[*].fabricNode.attributes | [?role=='controller'].{name: name , model: model, version: version}\") }}"
+
+  - name: APIC  FIRMWARE DETAILS
+    debug:
+     var:  CONTROLLER_FW
+
+- import_playbook: get_apic_health_state.yml
+ 
+

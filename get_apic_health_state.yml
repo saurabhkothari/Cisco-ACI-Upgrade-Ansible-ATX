@@ -1,0 +1,24 @@
+- name: Fetch APIC Health Info
+  hosts: apic
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks: 
+  - name: Query APIC
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: get
+     path: "{{ apic_health_api_path }}"
+    delegate_to: localhost    
+    register: query_result
+  - name: Filter Query
+    set_fact:
+            node1: "{{ query_result | json_query(\"imdata[].infraWiNode.attributes | [?dn=='topology/pod-1/node-1/av/node-1'].{addr: addr,  nodeName: nodeName, health: health, operSt: operSt} \") }}"
+            node2: "{{ query_result | json_query(\"imdata[].infraWiNode.attributes | [?dn=='topology/pod-1/node-1/av/node-2'].{addr: addr,  nodeName: nodeName, health: health, operSt: operSt} \") }}"
+            node3: "{{ query_result | json_query(\"imdata[].infraWiNode.attributes | [?dn=='topology/pod-1/node-1/av/node-3'].{addr: addr,  nodeName: nodeName, health: health, operSt: operSt} \") }}"
+  - name: APIC HEALTH INFO
+    debug:
+     var: node1

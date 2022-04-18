@@ -1,0 +1,22 @@
+- name: Fetch Firmware Details
+  hosts: apic
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks: 
+
+  - name: Query APIC
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: get
+     path: /api/node/class/maintUpgJob.json
+    delegate_to: localhost    
+    register: query_result
+  - name: Filter Query
+    set_fact: 
+     #AES_DETAILS: "{{ query_result | json_query(\"imdata.maintUpgJob.attributes | [?fwGrp=='leaf-odd'].upgradeStatus\")   }}"
+  - debug:
+          var: query_result

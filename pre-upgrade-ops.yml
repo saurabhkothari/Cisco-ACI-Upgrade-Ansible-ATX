@@ -1,0 +1,8 @@
+
+- import_playbook: collect_techsupport.yml
+
+- import_playbook: fabric_backup.yml
+
+- import_playbook: get_apic_storage_partition_info.yml
+
+- import_playbook: upload_firmware_images.yml

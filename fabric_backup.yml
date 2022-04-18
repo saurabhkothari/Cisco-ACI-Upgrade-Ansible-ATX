@@ -1,0 +1,67 @@
+- hosts: apic
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks:
+  - name: Query Available Snapshots
+    aci_config_snapshot:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     state: query
+    delegate_to: localhost
+    register: query_result
+
+  - name: Query Data
+    set_fact: 
+     before: "{{  query_result | json_query(\"current[*].configSnapshot.attributes.fileName\")  }}"
+
+  - name: Show available Snapshots 
+    debug:
+     var:  before 
+
+  - name: Create a Snapshot
+    aci_config_snapshot:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     state: present 
+     export_policy: "{{ apic_config_backup }}"
+     description: Backups taken before new configs are applied.
+    
+    delegate_to: localhost
+    register: y
+
+  - name: Query Avaiable Snapshots
+    aci_config_snapshot:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     state: query
+    delegate_to: localhost
+    register: query_result
+
+  - name: Query Data
+    set_fact:
+     after: "{{  query_result | json_query(\"current[*].configSnapshot.attributes.fileName\")  }}"
+  - name: Query Data
+    set_fact: 
+     backup_var: "{{ after[3] }}"
+  - name: Show Available Snapshots
+    debug:
+     var:  after
+
+  - name: Transfer Backup to Remote Server
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: post
+     path: "{{ backup_remote_server_api_path }}"
+     content: '{"fabricInst":{"attributes":{"dn":"uni/fabric","status":"created,modified"},"children":[{"configSnapshotMgrP":{"attributes":{"dn":"uni/fabric/snpmgr-defaultUpload","name":"defaultUpload","adminSt":"triggered","fileName":"{{ backup_var }}","mode":"upload","rn":"snpmgr-defaultUpload","status":"created,modified"},"children":[{"configRsRemotePath":{"attributes":{"tnFileRemotePathName":"ATX_ScpServer","status":"created,modified"},"children":[]}}]}}]}}'
+    delegate_to: localhost
+

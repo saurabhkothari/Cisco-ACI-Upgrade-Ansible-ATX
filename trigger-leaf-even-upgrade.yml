@@ -1,0 +1,30 @@
+- name: Update Controller Firmware 
+  hosts: apic
+  gather_facts: no
+  vars_files:
+          - vars/apic_vars.yml
+  tasks:
+
+  - name: Set Controller Fw Policy
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: post
+     path: /api/node/mo/uni/fabric.xml
+     content: "{{ leaf_even_fw_payload_api_path  }}"
+    delegate_to: localhost    
+    register: query_result
+
+  - name: Trigger Fw Upgrade
+    aci_rest:
+     host: "{{ apic_ip }}"
+     username: "{{ apic_username }}"
+     password: "{{ apic_password }}"
+     validate_certs: no
+     method: post
+     path: /api/node/mo/uni/fabric.xml
+     content: "{{ leaf_even_trigger_payload_api_path }}"
+    delegate_to: localhost    
+    register: query_result
